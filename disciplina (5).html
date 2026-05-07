@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Дисциплина жизни</title>
+
+<!-- PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Дисциплина">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230d0d0d'/%3E%3Ctext x='50%25' y='55%25' font-size='100' text-anchor='middle' dominant-baseline='middle'%3E⚡%3C/text%3E%3C/svg%3E">
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0d0d;--card:#161616;--card2:#1c1c1c;--border:#242424;--text:#f0f0f0;--muted:#4a4a4a;--muted2:#666;
+  --b1:#FFD166;--b2:#EF476F;--b3:#06D6A0;--b4:#118AB2;
+  --b1bg:rgba(255,209,102,.07);--b2bg:rgba(239,71,111,.07);--b3bg:rgba(6,214,160,.07);--b4bg:rgba(17,138,178,.07);
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Raleway',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+.header{padding:18px 18px 0;position:sticky;top:0;z-index:50;background:rgba(13,13,13,.97);backdrop-filter:blur(16px)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.app-title{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900;letter-spacing:-.02em;background:linear-gradient(90deg,#FFD166,#EF476F,#06D6A0,#118AB2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:300%;animation:gs 6s ease infinite}
+@keyframes gs{0%,100%{background-position:0%}50%{background-position:100%}}
+.exit-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-size:10px;font-weight:700;color:var(--muted2);font-family:'Montserrat',sans-serif;letter-spacing:.05em;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px}
+.exit-btn:hover{color:var(--b2);border-color:rgba(239,71,111,.3)}
+
+/* exit screen */
+.exit-screen{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(12px)}
+.exit-screen.show{display:flex}
+.exit-box{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:32px 28px;text-align:center;max-width:300px;width:90%;animation:fi .25s ease}
+.exit-box h3{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;margin-bottom:8px}
+.exit-box p{font-size:13px;color:var(--muted2);margin-bottom:24px;line-height:1.5}
+.exit-btns{display:flex;flex-direction:column;gap:10px}
+.exit-confirm{background:var(--b2);border:none;border-radius:12px;padding:13px;color:#fff;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:opacity .2s}
+.exit-confirm:hover{opacity:.85}
+.exit-cancel{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;padding:13px;color:var(--text);font-size:14px;font-weight:600;font-family:'Raleway',sans-serif;cursor:pointer;transition:all .2s}
+.exit-cancel:hover{background:rgba(255,255,255,.1)}
+.nav{display:flex}
+.nav-btn{flex:1;padding:10px 4px;background:none;border:none;border-bottom:2px solid transparent;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);cursor:pointer;transition:all .2s}
+.nav-btn.active{color:var(--text);border-bottom-color:var(--text)}
+
+/* PAGES */
+.page{display:none;padding:16px 16px 60px}
+.page.active{display:block;animation:fi .22s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* DATE BAR */
+.date-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.date-label{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em}
+.today-score{font-size:12px;font-weight:600;color:var(--muted2)}
+.today-score span{font-family:'Montserrat',sans-serif;font-weight:900;font-size:15px;color:var(--text)}
+
+/* BLOCK CARD */
+.block-card{background:var(--card);border-radius:16px;border:1px solid var(--border);margin-bottom:10px;overflow:hidden}
+.block-header{display:flex;align-items:center;justify-content:space-between;padding:13px 15px 9px;cursor:pointer;user-select:none}
+.block-left{display:flex;align-items:center;gap:9px}
+.block-icon{font-size:18px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.b1 .block-icon{background:var(--b1bg)}.b2 .block-icon{background:var(--b2bg)}.b3 .block-icon{background:var(--b3bg)}.b4 .block-icon{background:var(--b4bg)}
+.block-name{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800}
+.b1 .block-name{color:var(--b1)}.b2 .block-name{color:var(--b2)}.b3 .block-name{color:var(--b3)}.b4 .block-name{color:var(--b4)}
+.block-right{display:flex;align-items:center;gap:7px}
+.block-pct{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900}
+.b1 .block-pct{color:var(--b1)}.b2 .block-pct{color:var(--b2)}.b3 .block-pct{color:var(--b3)}.b4 .block-pct{color:var(--b4)}
+.arr{color:var(--muted);font-size:10px;transition:transform .2s}
+.block-card.open .arr{transform:rotate(180deg)}
+.bprog{height:2px;margin:0 15px;background:var(--border);border-radius:10px;overflow:hidden}
+.bprog-fill{height:100%;border-radius:10px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.b1 .bprog-fill{background:var(--b1)}.b2 .bprog-fill{background:var(--b2)}.b3 .bprog-fill{background:var(--b3)}.b4 .bprog-fill{background:var(--b4)}
+.block-body{display:none;padding:8px 15px 14px}
+.block-card.open .block-body{display:block}
+
+/* ── SECTION inside block ── */
+.sect-label{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin:10px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.sect-label:first-child{margin-top:2px}
+
+/* TYPE A — simple toggle row */
+.toggle-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.toggle-row:last-of-type{border-bottom:none}
+.tcb{width:22px;height:22px;border-radius:7px;border:2px solid var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .22s}
+.toggle-row.done .tcb,.subtask-row.done .tcb{border-color:transparent}
+.b1 .toggle-row.done .tcb,.b1 .subtask-row.done .tcb{background:var(--b1)}
+.b2 .toggle-row.done .tcb,.b2 .subtask-row.done .tcb{background:var(--b2)}
+.b3 .toggle-row.done .tcb,.b3 .subtask-row.done .tcb{background:var(--b3)}
+.b4 .toggle-row.done .tcb,.b4 .subtask-row.done .tcb{background:var(--b4)}
+.csvi{opacity:0;transform:scale(.3);transition:all .18s}
+.toggle-row.done .csvi,.subtask-row.done .csvi{opacity:1;transform:scale(1)}
+.ttext{font-size:13px;font-weight:500;flex:1;line-height:1.3;transition:color .2s}
+.toggle-row.done .ttext{color:var(--muted2);text-decoration:line-through;text-decoration-color:#2a2a2a}
+
+/* TYPE B — expandable section */
+.typeb-section{border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:0}
+.typeb-section:last-child{border-bottom:none;padding-bottom:0}
+.typeb-header{display:flex;align-items:center;gap:11px;padding:10px 0 6px;cursor:pointer;user-select:none}
+.typeb-header .ttext{font-size:13px;font-weight:600}
+.typeb-sub{padding-left:33px}
+.subtask-row{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;user-select:none}
+.subtask-row .ttext{font-size:12px;font-weight:400;color:var(--muted2)}
+.subtask-row.done .ttext{text-decoration:line-through;text-decoration-color:#2a2a2a}
+.subtask-row .tcb{width:18px;height:18px;border-radius:5px}
+.failed-badge{font-size:9px;background:rgba(239,71,111,.15);color:var(--b2);border-radius:4px;padding:2px 6px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.05em;flex-shrink:0}
+
+/* add subtask inline */
+.add-sub-row{display:flex;gap:6px;margin-top:6px;padding-left:33px}
+.add-sub-inp{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:'Raleway',sans-serif;color:var(--text);outline:none;transition:border-color .2s}
+.add-sub-inp:focus{border-color:rgba(255,255,255,.14)}
+.add-sub-inp::placeholder{color:var(--muted)}
+.add-sub-btn{width:30px;height:30px;border-radius:7px;border:none;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;transition:opacity .2s;flex-shrink:0}
+.b1 .add-sub-btn{background:var(--b1)}.b2 .add-sub-btn{background:var(--b2);color:#fff}.b3 .add-sub-btn{background:var(--b3)}.b4 .add-sub-btn{background:var(--b4);color:#fff}
+.add-sub-btn:hover{opacity:.8}
+
+.sdel{opacity:0;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:0 3px;line-height:1;transition:all .2s;flex-shrink:0}
+.subtask-row:hover .sdel{opacity:1}
+.sdel:hover{color:var(--b2)}
+
+/* RESULTS PAGE */
+.res-header{text-align:center;padding:20px 0 24px;position:relative}
+.res-header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200px;height:140px;background:radial-gradient(circle,rgba(255,209,102,.06),transparent 70%);pointer-events:none}
+.score-lbl{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--muted2);margin-bottom:4px}
+.score-num{font-family:'Montserrat',sans-serif;font-size:72px;font-weight:900;line-height:1;background:linear-gradient(135deg,var(--b1),var(--b2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-sub{font-size:11px;color:var(--muted2);margin-top:2px}
+
+.sec-title{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* week strip */
+.week-strip{display:flex;gap:4px;margin-bottom:20px}
+.wd{flex:1;text-align:center}
+.wd-lbl{font-size:8px;font-family:'Montserrat',sans-serif;font-weight:700;color:var(--muted2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.wd-dot{height:38px;border-radius:7px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'Montserrat',sans-serif;font-weight:800;color:var(--muted2);transition:all .3s;flex-direction:column;gap:1px}
+.wd-dot.good{background:rgba(6,214,160,.1);border-color:rgba(6,214,160,.4);color:var(--b3)}
+.wd-dot.mid{background:rgba(255,209,102,.08);border-color:rgba(255,209,102,.3);color:var(--b1)}
+.wd-dot.bad{background:rgba(239,71,111,.07);border-color:rgba(239,71,111,.2);color:var(--b2)}
+.wd-dot.tod{box-shadow:0 0 0 1.5px var(--b1)}
+
+/* sphere rows */
+.sphere-list{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
+.sph-row{}
+.sph-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.sph-name{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.sph-right{display:flex;align-items:center;gap:8px}
+.sph-zone{font-size:9px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.sph-zone.rz{color:var(--b3)}.sph-zone.dz{color:var(--b2)}
+.sph-val{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900}
+.sph-bar{height:6px;background:var(--border);border-radius:10px;overflow:hidden}
+.sph-fill{height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.sph-desc{font-size:11px;color:var(--muted2);margin-top:4px}
+
+/* zones */
+.zones-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.zone-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px}
+.zt{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.zt.w{color:var(--b2)}.zt.s{color:var(--b3)}
+.zi{display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:12px;font-weight:500;border-bottom:1px solid var(--border)}
+.zi:last-child{border-bottom:none}
+.zv{font-family:'Montserrat',sans-serif;font-weight:900;font-size:14px}
+.zt.w~.zi .zv{color:var(--b2)}.zt.s~.zi .zv{color:var(--b3)}
+
+/* week history */
+.week-hist-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.wh-label{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:var(--muted2);min-width:90px}
+.wh-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:10px;overflow:hidden}
+.wh-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--b1),var(--b3));transition:width .7s cubic-bezier(.4,0,.2,1)}
+.wh-val{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;min-width:36px;text-align:right}
+.wh-diff{font-size:10px;font-family:'Montserrat',sans-serif;font-weight:700;min-width:36px;text-align:right}
+.wh-diff.up{color:var(--b3)}.wh-diff.down{color:var(--b2)}.wh-diff.same{color:var(--muted2)}
+
+/* month summary */
+.month-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:8px}
+.month-title{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.month-score{font-family:'Montserrat',sans-serif;font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--b1),var(--b2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.month-block-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.month-block-name{font-size:12px;font-weight:600;width:130px;flex-shrink:0}
+.month-block-bar{flex:1;height:4px;background:var(--border);border-radius:10px;overflow:hidden}
+.month-block-fill{height:100%;border-radius:10px;transition:width .7s}
+.month-block-val{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;min-width:32px;text-align:right}
+
+/* message card */
+.msg-card{border-radius:16px;padding:20px;margin-bottom:18px;text-align:center;border:1px solid transparent;position:relative;overflow:hidden}
+.msg-card.bad{background:rgba(239,71,111,.08);border-color:rgba(239,71,111,.2)}
+.msg-card.mid{background:rgba(255,209,102,.07);border-color:rgba(255,209,102,.2)}
+.msg-card.good{background:rgba(6,214,160,.08);border-color:rgba(6,214,160,.2)}
+.msg-emoji{font-size:32px;margin-bottom:10px}
+.msg-text{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;line-height:1.5;color:var(--text)}
+.msg-card.bad .msg-text{color:#f08090}
+.msg-card.mid .msg-text{color:var(--b1)}
+.msg-card.good .msg-text{color:var(--b3)}
+.week-compare{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:11px;color:var(--muted2);font-family:'Montserrat',sans-serif;font-weight:700}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);background:#1e1e1e;border:1px solid #303030;border-radius:30px;padding:10px 18px;font-size:12px;font-weight:600;white-space:nowrap;z-index:999;opacity:0;transition:all .28s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="app-title">ДИСЦИПЛИНА ЖИЗНИ</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="sprint-badge" id="sprintBadge">⚡ МАЙ 2026</div>
+      <button class="exit-btn" onclick="showExit()">✕ Выйти</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="go('today')">Сегодня</button>
+    <button class="nav-btn" onclick="go('results')">Итоги</button>
+  </div>
+</div>
+
+<!-- EXIT SCREEN -->
+<div class="exit-screen" id="exitScreen">
+  <div class="exit-box">
+    <div style="font-size:36px;margin-bottom:12px">👊🏼</div>
+    <h3>Выйти из приложения?</h3>
+    <p>Все данные сохранены. Возвращайся — дисциплина не ждёт.</p>
+    <div class="exit-btns">
+      <button class="exit-confirm" onclick="doExit()">Да, выйти</button>
+      <button class="exit-cancel" onclick="hideExit()">Остаться</button>
+    </div>
+  </div>
+</div>
+
+<!-- TODAY -->
+<div class="page active" id="page-today">
+  <div class="date-bar">
+    <div class="date-label" id="todayLabel"></div>
+    <div class="today-score">Выполнено: <span id="todayPct">0%</span></div>
+  </div>
+  <div id="blocksContainer"></div>
+</div>
+
+<!-- RESULTS -->
+<div class="page" id="page-results">
+  <div id="msgCard"></div>
+
+  <div class="res-header">
+    <div class="score-lbl">Дисциплина за неделю</div>
+    <div class="score-num" id="totalScore">0</div>
+    <div class="score-sub">из 10</div>
+  </div>
+
+  <div class="sec-title">7 дней</div>
+  <div class="week-strip" id="weekStrip"></div>
+
+  <div class="sec-title">Сферы роста</div>
+  <div class="sphere-list" id="sphereList"></div>
+
+  <div class="zones-grid" id="zonesGrid"></div>
+
+  <div class="sec-title" style="margin-top:20px">История недель</div>
+  <div id="weekHistory"></div>
+
+  <div class="sec-title" style="margin-top:20px">Итог месяца</div>
+  <div id="monthSummary"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+// Block 1: Очистка — mixed structure
+// typeA = simple daily toggle (no subtasks)
+// typeB = daily toggle + can add subtasks (failed if not done by end of day)
+
+const DNAMES=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const DLONG=['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const COLORS={1:'#FFD166',2:'#EF476F',3:'#06D6A0',4:'#118AB2'};
+
+// Fixed items per block
+// type: 'A' = toggle only, 'C' = title only + subtasks, 'W' = weekly task, 'M' = monthly task
+// weekend:true = show on weekends too
+const FIXED = {
+  1: [
+    {id:'f1_1', text:'Фастфуд / газировка / сладкое', type:'A', emoji:'🍔', weekend:true},
+    {id:'f1_2', text:'Бесполезный скролл ленты', type:'A', emoji:'📵', weekend:true},
+    {id:'f1_3', text:'Очистка дома от мусора', type:'C', emoji:'🏠', weekend:false},
+    {id:'f1_4', text:'Закрытие кредитов', type:'M', emoji:'💳', weekend:true},
+  ],
+  2: [
+    {id:'f2_1', text:'Решительность', type:'C', emoji:'⚡', weekend:false, days:[1,2,3,4,5]},
+    {id:'f2_2', text:'Магнит денег', type:'A', emoji:'💰', weekend:false, days:[1,2,3,4,5]},
+    {id:'f2_3', text:'Кайдзен', type:'A', emoji:'🧠', weekend:false, days:[1,2,3,4,5]},
+    {id:'f2_4', text:'Офис в 12:00', type:'A', emoji:'🏢', weekend:false, officeDays:[1,3,5]},
+  ],
+  3: [
+    {id:'f3_1', text:'Сон 01:00 / подъём 10:00', type:'A', emoji:'😴', weekend:false},
+    {id:'f3_2', text:'Профилактика здоровья', type:'W', emoji:'🩺', weekend:true},
+    {id:'f3_3', text:'Лечение зубов', type:'W', emoji:'🦷', weekend:true},
+    {id:'f3_4', text:'Покупка одежды и аксессуаров', type:'M', emoji:'👕', weekend:true},
+  ],
+  4: [],
+};
+
+const BLOCK_META = [
+  {id:1, name:'Очистка', emoji:'🧹', cls:'b1'},
+  {id:2, name:'Мышление', emoji:'🎯', cls:'b2'},
+  {id:3, name:'Здоровье и энергия', emoji:'🟢', cls:'b3'},
+];
+
+function todayKey(){return new Date().toISOString().split('T')[0]}
+function dk(){return todayKey()}
+
+function load(){
+  try{const s=localStorage.getItem('dj_v5');if(s)return JSON.parse(s)}catch(e){}
+  return{
+    // toggles: { dateKey: { itemId: bool } }
+    toggles:{},
+    // subtasks per typeB item: { itemId: [ {id,text,dateAdded,doneDates:[]} ] }
+    subtasks:{},
+    // extra free tasks for blocks 2,3,4: same as before
+    tasks:{2:[],3:[],4:[]},
+    done:{},
+    hist:{}
+  };
+}
+let S = load();
+function save(){localStorage.setItem('dj_v5',JSON.stringify(S))}
+
+function getToggles(dateKey){
+  if(!S.toggles[dateKey])S.toggles[dateKey]={};
+  return S.toggles[dateKey];
+}
+
+function fixedScore(bid, dateKey){
+  const tog = getToggles(dateKey);
+  const d = new Date(dateKey);
+  const isWE = d.getDay()===0||d.getDay()===6;
+  const fixed = (FIXED[bid]||[]).filter(item => !isWE || item.weekend);
+  let total = 0, done = 0;
+  fixed.forEach(item => {
+    if(item.type==='A'){
+      total++; if(tog[item.id]) done++;
+    } else if(item.type==='B'){
+      total++; if(tog[item.id]) done++;
+      const subs=(S.subtasks[item.id]||[]).filter(s=>s.dateAdded===dateKey);
+      subs.forEach(s=>{total++;if(s.done)done++;});
+    } else if(item.type==='C'){
+      // Always count the item itself — done if at least one subtask is done
+      total++;
+      const subs=(S.subtasks[item.id]||[]).filter(s=>s.dateAdded===dateKey);
+      if(subs.length && subs.some(s=>s.done)) done++;
+    } else if(item.type==='W'){
+      const pk=weekKey();
+      const subs=(S.subtasks[item.id]||[]).filter(s=>s.periodKey===pk);
+      total++;
+      if(subs.length && subs.some(s=>s.done)) done++;
+    } else if(item.type==='M'){
+      const pk=monthKey();
+      const subs=(S.subtasks[item.id]||[]).filter(s=>s.periodKey===pk);
+      total++;
+      if(subs.length && subs.some(s=>s.done)) done++;
+    }
+  });
+  return total ? Math.round(done/total*100) : 0;
+}
+
+function bpct(bid, dateKey){
+  if(FIXED[bid]&&FIXED[bid].length) return fixedScore(bid, dateKey);
+  const tasks = S.tasks[bid] || [];
+  if(!tasks.length) return 0;
+  const done = S.done[dateKey] || {};
+  return Math.round(tasks.filter(t=>done[t.id]).length/tasks.length*100);
+}
+
+function totpct(dateKey){
+  let s=0; BLOCK_META.forEach(b=>s+=bpct(b.id,dateKey));
+  return Math.round(s/BLOCK_META.length);
+}
+
+function weekScore(){
+  let s=0,c=0;
+  for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);s+=S.hist[d.toISOString().split('T')[0]]||0;c++}
+  return ((s/c)/10).toFixed(1);
+}
+
+function updHist(){S.hist[dk()]=totpct(dk());save()}
+
+// ── CHECK SVG ──
+function chk(darkBg){
+  const stroke = darkBg ? '#fff' : '#000';
+  return `<svg class="csvi" width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L4 7.5L10 1" stroke="${stroke}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+// ── RENDER TODAY ──
+function renderToday(){
+  const d = new Date();
+  document.getElementById('todayLabel').textContent =
+    DLONG[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+
+  const c = document.getElementById('blocksContainer');
+  c.innerHTML = '';
+
+  BLOCK_META.forEach(b => {
+    const pct = bpct(b.id, dk());
+    const card = document.createElement('div');
+    card.className = 'block-card ' + b.cls + ' open';
+    card.id = 'bc_'+b.id;
+
+    const bodyHTML = (FIXED[b.id]&&FIXED[b.id].length) ? renderFixedBlockBody(b.id) : renderFreeBlockBody(b.id);
+
+    card.innerHTML = `
+      <div class="block-header" onclick="toggleB(${b.id})">
+        <div class="block-left">
+          <div class="block-icon">${b.emoji}</div>
+          <div class="block-name">${b.name}</div>
+        </div>
+        <div class="block-right">
+          <div class="block-pct" id="bpct_${b.id}">${pct}%</div>
+          <div class="arr">▼</div>
+        </div>
+      </div>
+      <div class="bprog"><div class="bprog-fill" id="bbar_${b.id}" style="width:${pct}%"></div></div>
+      <div class="block-body">${bodyHTML}</div>`;
+    c.appendChild(card);
+  });
+
+  updScore();
+}
+
+function isWeekend(){const d=new Date().getDay();return d===0||d===6;}
+
+function renderFixedBlockBody(bid){
+  const tog = getToggles(dk());
+  const darkCheck = bid===2||bid===4;
+  const weekend = isWeekend();
+  let html = '';
+
+  const today = new Date().getDay();
+  const items = (FIXED[bid]||[]).filter(item => {
+    if(weekend && !item.weekend) return false;
+    if(item.days && !item.days.includes(today)) return false;
+    return true;
+  });
+
+  if(!items.length){
+    return `<div style="font-size:12px;color:var(--muted2);padding:10px 0;text-align:center">🏖️ Выходной — отдыхай!</div>`;
+  }
+
+  items.forEach(item => {
+    const isDone = !!tog[item.id];
+    const isOfficeDay = !item.officeDays || item.officeDays.includes(today);
+
+    if(item.type === 'A'){
+      if(item.officeDays){
+        // Special: always visible, but only interactive on officeDays
+        html += `
+          <div class="toggle-row${isDone?' done':''}" id="tr_${item.id}" 
+            ${isOfficeDay ? `onclick="toggleFixed('${item.id}')"` : ''}
+            style="${!isOfficeDay?'opacity:.35;cursor:default':''}"
+          >
+            <div class="tcb">${chk(darkCheck)}</div>
+            <span class="ttext">${item.emoji} ${item.text}</span>
+            ${!isOfficeDay?`<span style="font-size:9px;color:var(--muted2);font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.06em">ПН · СР · ПТ</span>`:''}
+          </div>`;
+      } else {
+      // Simple toggle
+      html += `
+        <div class="toggle-row${isDone?' done':''}" id="tr_${item.id}" onclick="toggleFixed('${item.id}')">
+          <div class="tcb">${chk(darkCheck)}</div>
+          <span class="ttext">${item.emoji} ${item.text}</span>
+        </div>`;
+      }
+
+    } else if(item.type === 'B'){
+      // Toggle header + subtasks
+      const subs = (S.subtasks[item.id] || []).filter(s => s.dateAdded === dk());
+      const subsHTML = subs.map(s => {
+        const failed = !s.done && isYesterday(s.dateAdded);
+        return `<div class="subtask-row${s.done?' done':''}" id="st_${s.id}" onclick="toggleSub('${item.id}','${s.id}')">
+          <div class="tcb">${chk(darkCheck)}</div>
+          <span class="ttext">${s.text}</span>
+          ${failed?'<span class="failed-badge">провалено</span>':''}
+          <button class="sdel" onclick="event.stopPropagation();delSub('${item.id}','${s.id}')">×</button>
+        </div>`;
+      }).join('');
+      html += `
+        <div class="typeb-section">
+          <div class="typeb-header${isDone?' done':''}" onclick="toggleFixed('${item.id}')">
+            <div class="tcb">${chk(darkCheck)}</div>
+            <span class="ttext">${item.emoji} ${item.text}</span>
+          </div>
+          <div class="typeb-sub">
+            <div id="subs_${item.id}">${subsHTML}</div>
+            <div class="add-sub-row">
+              <input class="add-sub-inp" id="si_${item.id}" placeholder="Добавить задачу..." onkeydown="if(event.key==='Enter')addSub('${item.id}')">
+              <button class="add-sub-btn" onclick="addSub('${item.id}')">+</button>
+            </div>
+          </div>
+        </div>`;
+
+    } else if(item.type === 'C'){
+      // No header checkbox — just title + subtasks only
+      const subs = (S.subtasks[item.id] || []).filter(s => s.dateAdded === dk());
+      const subsHTML = subs.map(s => {
+        const failed = !s.done && isYesterday(s.dateAdded);
+        return `<div class="subtask-row${s.done?' done':''}" id="st_${s.id}" onclick="toggleSub('${item.id}','${s.id}')">
+          <div class="tcb">${chk(darkCheck)}</div>
+          <span class="ttext">${s.text}</span>
+          ${failed?'<span class="failed-badge">провалено</span>':''}
+          <button class="sdel" onclick="event.stopPropagation();delSub('${item.id}','${s.id}')">×</button>
+        </div>`;
+      }).join('');
+      html += `
+        <div class="typeb-section">
+          <div style="padding:10px 0 6px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">${item.emoji}</span>
+            <span class="ttext" style="font-weight:700;font-size:13px;color:var(--text)">${item.text}</span>
+          </div>
+          <div class="typeb-sub">
+            <div id="subs_${item.id}">${subsHTML}</div>
+            <div class="add-sub-row">
+              <input class="add-sub-inp" id="si_${item.id}" placeholder="Добавить решение или действие..." onkeydown="if(event.key==='Enter')addSub('${item.id}')">
+              <button class="add-sub-btn" onclick="addSub('${item.id}')">+</button>
+            </div>
+          </div>
+        </div>`;
+
+    } else if(item.type === 'W' || item.type === 'M'){
+      // Weekly / Monthly task bucket
+      const period = item.type === 'W' ? 'неделю' : 'месяц';
+      const periodKey = item.type === 'W' ? weekKey() : monthKey();
+      const subs = (S.subtasks[item.id] || []).filter(s => s.periodKey === periodKey);
+      const subsHTML = subs.map(s => {
+        const isOverdue = !s.done && isPeriodOver(item.type, s.periodKey);
+        return `<div class="subtask-row${s.done?' done':''}" id="st_${s.id}" onclick="toggleSub('${item.id}','${s.id}')">
+          <div class="tcb">${chk(darkCheck)}</div>
+          <span class="ttext">${s.text}</span>
+          ${isOverdue?'<span class="failed-badge">провалено</span>':''}
+          <button class="sdel" onclick="event.stopPropagation();delSub('${item.id}','${s.id}')">×</button>
+        </div>`;
+      }).join('');
+      const periodLabel = item.type==='W' ? 'На неделю' : 'На месяц';
+      html += `
+        <div class="typeb-section">
+          <div style="padding:10px 0 4px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">${item.emoji}</span>
+              <span class="ttext" style="font-weight:700;font-size:13px;color:var(--text)">${item.text}</span>
+            </div>
+            <span style="font-size:9px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.08em;color:var(--muted2);text-transform:uppercase">${periodLabel}</span>
+          </div>
+          <div class="typeb-sub">
+            <div id="subs_${item.id}">${subsHTML||'<div style="font-size:12px;color:var(--muted2);padding:4px 0">Задач пока нет</div>'}</div>
+            <div class="add-sub-row">
+              <input class="add-sub-inp" id="si_${item.id}" placeholder="Добавить задачу на ${period}..." onkeydown="if(event.key==='Enter')addSubPeriod('${item.id}','${item.type}')">
+              <button class="add-sub-btn" onclick="addSubPeriod('${item.id}','${item.type}')">+</button>
+            </div>
+          </div>
+        </div>`;
+    }
+  });
+
+  return html;
+}
+// keep old name as alias for block 1
+function renderBlock1Body(){ return renderFixedBlockBody(1); }
+
+function renderFreeBlockBody(bid){
+  const tasks = S.tasks[bid] || [];
+  const done = S.done[dk()] || {};
+  let html = tasks.map(t => `
+    <div class="toggle-row${done[t.id]?' done':''}" id="ft_${t.id}" onclick="toggleFreeTask(${bid},'${t.id}')">
+      <div class="tcb">${chk(bid===2||bid===4)}</div>
+      <span class="ttext">${t.text}</span>
+      <button class="sdel" style="opacity:0" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0" onclick="event.stopPropagation();delFreeTask(${bid},'${t.id}')">×</button>
+    </div>`).join('');
+
+  html += `
+    <div class="add-sub-row" style="padding-left:0;margin-top:${tasks.length?'8px':'2px'}">
+      <input class="add-sub-inp" id="fi_${bid}" placeholder="Добавить задачу..." onkeydown="if(event.key==='Enter')addFreeTask(${bid})">
+      <button class="add-sub-btn" onclick="addFreeTask(${bid})">+</button>
+    </div>`;
+  return html;
+}
+
+function weekKey(){
+  const d=new Date();
+  const day=d.getDay()||7;
+  const mon=new Date(d);mon.setDate(d.getDate()-day+1);
+  return mon.toISOString().split('T')[0];
+}
+function monthKey(){
+  const d=new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+}
+function isPeriodOver(type, pk){
+  if(type==='W') return pk < weekKey();
+  return pk < monthKey();
+}
+
+function addSubPeriod(itemId, type){
+  const inp=document.getElementById('si_'+itemId);
+  const txt=inp.value.trim();if(!txt)return;
+  if(!S.subtasks[itemId])S.subtasks[itemId]=[];
+  const id=itemId+'_'+Date.now();
+  const pk=type==='W'?weekKey():monthKey();
+  S.subtasks[itemId].push({id,text:txt,dateAdded:dk(),periodKey:pk,done:false});
+  inp.value='';
+  save();updHist();refreshFixedBlock(getBidForItem(itemId));updScore();
+  toast('+ Задача добавлена');
+}
+
+function isYesterday(dateKey){
+  const y = new Date(); y.setDate(y.getDate()-1);
+  return y.toISOString().split('T')[0] === dateKey;
+}
+
+// INTERACTIONS — Block 1
+function getBidForItem(itemId){
+  for(const bid in FIXED){ if((FIXED[bid]||[]).find(x=>x.id===itemId)) return parseInt(bid); }
+  return 1;
+}
+
+function toggleFixed(itemId){
+  const tog = getToggles(dk());
+  tog[itemId] = !tog[itemId];
+  save(); updHist(); refreshFixedBlock(getBidForItem(itemId)); updScore();
+  if(tog[itemId]) toast('✓ Выполнено!');
+}
+
+function addSub(itemId){
+  const inp = document.getElementById('si_'+itemId);
+  const txt = inp.value.trim(); if(!txt) return;
+  if(!S.subtasks[itemId]) S.subtasks[itemId] = [];
+  const id = itemId+'_'+Date.now();
+  S.subtasks[itemId].push({id, text:txt, dateAdded:dk(), done:false});
+  inp.value = '';
+  save(); updHist(); refreshFixedBlock(getBidForItem(itemId)); updScore();
+  toast('+ Задача добавлена');
+}
+
+function toggleSub(itemId, subId){
+  const subs = S.subtasks[itemId] || [];
+  const s = subs.find(x=>x.id===subId);
+  if(s){ s.done = !s.done; save(); updHist(); refreshFixedBlock(getBidForItem(itemId)); updScore(); if(s.done) toast('✓ Выполнено!'); }
+}
+
+function delSub(itemId, subId){
+  S.subtasks[itemId] = (S.subtasks[itemId]||[]).filter(s=>s.id!==subId);
+  save(); refreshFixedBlock(getBidForItem(itemId)); updScore();
+}
+
+function refreshFixedBlock(bid){
+  const body = document.querySelector('#bc_'+bid+' .block-body');
+  if(body) body.innerHTML = renderFixedBlockBody(bid);
+  const pct = bpct(bid, dk());
+  const pe = document.getElementById('bpct_'+bid); if(pe) pe.textContent = pct+'%';
+  const be = document.getElementById('bbar_'+bid); if(be) be.style.width = pct+'%';
+}
+function refreshBlock1(){ refreshFixedBlock(1); }
+
+// INTERACTIONS — Free blocks
+function toggleFreeTask(bid, tid){
+  if(!S.done[dk()]) S.done[dk()] = {};
+  S.done[dk()][tid] = !S.done[dk()][tid];
+  save(); updHist();
+  const el = document.getElementById('ft_'+tid);
+  if(el) el.classList.toggle('done', !!S.done[dk()][tid]);
+  const pct = bpct(bid, dk());
+  const pe = document.getElementById('bpct_'+bid); if(pe) pe.textContent = pct+'%';
+  const be = document.getElementById('bbar_'+bid); if(be) be.style.width = pct+'%';
+  updScore();
+  if(S.done[dk()][tid]) toast('✓ Выполнено!');
+}
+
+function addFreeTask(bid){
+  const inp = document.getElementById('fi_'+bid);
+  const txt = inp.value.trim(); if(!txt) return;
+  if(!S.tasks[bid]) S.tasks[bid] = [];
+  const id = bid+'_'+Date.now();
+  S.tasks[bid].push({id, text:txt});
+  inp.value = '';
+  save();
+  const body = document.querySelector('#bc_'+bid+' .block-body');
+  if(body) body.innerHTML = renderFreeBlockBody(bid);
+  updScore();
+  toast('+ Задача добавлена');
+}
+
+function delFreeTask(bid, tid){
+  S.tasks[bid] = (S.tasks[bid]||[]).filter(t=>t.id!==tid);
+  Object.values(S.done).forEach(d=>delete d[tid]);
+  save();
+  const body = document.querySelector('#bc_'+bid+' .block-body');
+  if(body) body.innerHTML = renderFreeBlockBody(bid);
+  updScore();
+}
+
+function toggleB(id){document.getElementById('bc_'+id).classList.toggle('open')}
+
+function updScore(){
+  const p = totpct(dk());
+  document.getElementById('todayPct').textContent = p+'%';
+}
+
+// ── RESULTS ──
+function getWeekAvg(weeksAgo){
+  let s=0,c=0;
+  for(let i=0;i<7;i++){
+    const d=new Date();d.setDate(d.getDate()-(weeksAgo*7)-i);
+    const k=d.toISOString().split('T')[0];
+    s+=S.hist[k]||0;c++;
+  }
+  return Math.round(s/c);
+}
+
+function getWeekLabel(weeksAgo){
+  const end=new Date();end.setDate(end.getDate()-(weeksAgo*7));
+  const start=new Date(end);start.setDate(end.getDate()-6);
+  const fmt=d=>d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3);
+  return fmt(start)+' – '+fmt(end);
+}
+
+function renderWeekHistory(){
+  const el=document.getElementById('weekHistory');
+  // show up to 8 weeks back
+  let html='';
+  let prevAvg=null;
+  const weeks=[];
+  for(let w=0;w<8;w++){
+    const avg=getWeekAvg(w);
+    weeks.push({w,avg,label:w===0?'Эта неделя':getWeekLabel(w)});
+  }
+  // filter weeks that have any data
+  const hasAny=weeks.some(x=>x.avg>0);
+  if(!hasAny){
+    el.innerHTML=`<div style="font-size:12px;color:var(--muted2);padding:10px 0;text-align:center">История появится после первой недели</div>`;
+    return;
+  }
+  weeks.forEach((wk,idx)=>{
+    if(wk.avg===0&&idx>0&&weeks.slice(0,idx).every(x=>x.avg===0)) return;
+    const val=(wk.avg/10).toFixed(1);
+    let diffHTML='';
+    if(prevAvg!==null){
+      const d=wk.avg-prevAvg;
+      const cls=d>0?'up':d<0?'down':'same';
+      const sign=d>0?'↑ +':d<0?'↓ ':'';
+      diffHTML=`<div class="wh-diff ${cls}">${sign}${Math.abs(d)}%</div>`;
+    }
+    prevAvg=wk.avg;
+    html+=`<div class="week-hist-item">
+      <div class="wh-label">${wk.label}</div>
+      <div class="wh-bar-wrap"><div class="wh-bar-fill" style="width:${wk.avg}%"></div></div>
+      <div class="wh-val" style="color:${wk.avg>=70?'var(--b3)':wk.avg>=35?'var(--b1)':'var(--b2)'}">${val}</div>
+      ${diffHTML}
+    </div>`;
+  });
+  el.innerHTML=html||`<div style="font-size:12px;color:var(--muted2);padding:10px 0;text-align:center">История появится после первой недели</div>`;
+}
+
+function renderMonthSummary(){
+  const el=document.getElementById('monthSummary');
+  const now=new Date();
+  const curMonth=now.getMonth();
+  const curYear=now.getFullYear();
+
+  // Group days by month
+  const months={};
+  Object.keys(S.hist).forEach(k=>{
+    const d=new Date(k);
+    const mk=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+    if(!months[mk]) months[mk]={days:[],month:d.getMonth(),year:d.getFullYear()};
+    months[mk].days.push(S.hist[k]);
+  });
+
+  if(!Object.keys(months).length){
+    el.innerHTML=`<div style="font-size:12px;color:var(--muted2);padding:10px 0;text-align:center">Итог месяца появится по мере заполнения</div>`;
+    return;
+  }
+
+  let html='';
+  Object.keys(months).sort().reverse().forEach(mk=>{
+    const m=months[mk];
+    const avg=Math.round(m.days.reduce((a,b)=>a+b,0)/m.days.length);
+    const score=(avg/10).toFixed(1);
+    const mName=MONTHS[m.month].charAt(0).toUpperCase()+MONTHS[m.month].slice(1)+' '+m.year;
+    const isCur=m.month===curMonth&&m.year===curYear;
+
+    // Per-block avg for this month
+    const blockRows=BLOCK_META.map(b=>{
+      let bs=0,bc=0;
+      m.days.forEach((_,i)=>{
+        const keys=Object.keys(S.hist).filter(k=>{
+          const d=new Date(k);
+          return d.getMonth()===m.month&&d.getFullYear()===m.year;
+        });
+        if(keys[i]){bs+=bpct(b.id,keys[i]);bc++;}
+      });
+      const bAvg=bc?Math.round(bs/bc):0;
+      return `<div class="month-block-row">
+        <div class="month-block-name">${b.emoji} ${b.name}</div>
+        <div class="month-block-bar"><div class="month-block-fill" style="width:${bAvg}%;background:${COLORS[b.id]}"></div></div>
+        <div class="month-block-val" style="color:${COLORS[b.id]}">${bAvg}%</div>
+      </div>`;
+    }).join('');
+
+    html+=`<div class="month-card">
+      <div class="month-title">
+        <span>${mName}${isCur?' (текущий)':''}</span>
+        <span class="month-score">${score}</span>
+      </div>
+      ${blockRows}
+      <div style="font-size:11px;color:var(--muted2);margin-top:8px">${m.days.length} дней активности · среднее ${avg}%</div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+function prevWeekScore(){
+  let s=0,c=0;
+  for(let i=7;i<14;i++){const d=new Date();d.setDate(d.getDate()-i);s+=S.hist[d.toISOString().split('T')[0]]||0;c++;}
+  return c ? Math.round(s/c) : 0;
+}
+
+function renderResults(){
+  const ws = parseFloat(weekScore());
+  document.getElementById('totalScore').textContent = ws.toFixed(1);
+
+  // Message card
+  const prevAvg = prevWeekScore();
+  const curAvg = Math.round(ws * 10);
+  const diff = curAvg - prevAvg;
+  const diffText = diff > 0 ? `↑ +${diff}% к прошлой неделе` : diff < 0 ? `↓ ${diff}% к прошлой неделе` : 'Как и прошлая неделя';
+
+  let msgClass, msgEmoji, msgText;
+  if(curAvg >= 70){
+    msgClass='good'; msgEmoji='💪🏼';
+    msgText='Я горжусь тобой Азамат! Ты на правильном пути';
+  } else if(curAvg >= 35){
+    msgClass='mid'; msgEmoji='😐';
+    msgText='Если хочешь остаться там же, где сейчас — то это нормальный результат )';
+  } else {
+    msgClass='bad'; msgEmoji='👊🏼';
+    msgText='Соберись! Жизнь даётся 1 раз Азамат';
+  }
+
+  document.getElementById('msgCard').innerHTML = curAvg === 0 ? '' : `
+    <div class="msg-card ${msgClass}">
+      <div class="msg-emoji">${msgEmoji}</div>
+      <div class="msg-text">${msgText}</div>
+      ${prevAvg > 0 ? `<div class="week-compare">${diffText}</div>` : ''}
+    </div>`;
+
+  // Week strip
+  const strip = document.getElementById('weekStrip'); strip.innerHTML = '';
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const k=d.toISOString().split('T')[0];
+    const p=S.hist[k]||0;
+    const isT=k===dk();
+    const cls=p>=70?'good':p>=30?'mid':p>0?'bad':'';
+    strip.innerHTML+=`<div class="wd">
+      <div class="wd-lbl">${DNAMES[d.getDay()]}</div>
+      <div class="wd-dot ${cls}${isT?' tod':''}">${p?p+'%':'—'}</div>
+    </div>`;
+  }
+
+  // Spheres — based purely on this week's average per block
+  const spheres = BLOCK_META.map(b=>{
+    let sum=0,cnt=0;
+    for(let i=0;i<7;i++){
+      const d=new Date();d.setDate(d.getDate()-i);
+      const k=d.toISOString().split('T')[0];
+      if(S.hist[k]!==undefined||k===dk()){sum+=bpct(b.id,k);cnt++;}
+    }
+    const avg = cnt ? Math.round(sum/cnt) : 0;
+    const val = (avg/10).toFixed(1);
+    return {...b, avg, val: parseFloat(val)};
+  });
+
+  document.getElementById('sphereList').innerHTML = spheres.map(s=>{
+    const isRZ = s.val >= 5;
+    const zoneLabel = s.val >= 7 ? 'Рабочая зона' : s.val >= 4 ? 'Развивается' : 'Зона роста';
+    const zoneClass = s.val >= 5 ? 'rz' : 'dz';
+    return `<div class="sph-row">
+      <div class="sph-top">
+        <div class="sph-name"><span>${s.emoji}</span><span>${s.name}</span></div>
+        <div class="sph-right">
+          <span class="sph-zone ${zoneClass}">${zoneLabel}</span>
+          <span class="sph-val" style="color:${COLORS[s.id]}">${s.val}</span>
+        </div>
+      </div>
+      <div class="sph-bar"><div class="sph-fill" style="width:${s.val*10}%;background:${COLORS[s.id]}"></div></div>
+      <div class="sph-desc">${s.avg}% выполнения за 7 дней</div>
+    </div>`;
+  }).join('');
+
+  // Zones — only show if there's real data
+  const hasData = spheres.some(s => s.val > 0);
+  if(!hasData){
+    document.getElementById('zonesGrid').innerHTML = `
+      <div style="grid-column:1/-1;background:var(--card);border:1px solid var(--border);border-radius:13px;padding:20px;text-align:center">
+        <div style="font-size:24px;margin-bottom:8px">🚀</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">Начни первый день</div>
+        <div style="font-size:11px;color:var(--muted2)">Зоны роста появятся после выполнения задач</div>
+      </div>`;
+    renderWeekHistory();
+    renderMonthSummary();
+    return;
+  }
+
+  const sorted = [...spheres].sort((a,b)=>a.val-b.val);
+  const weak = sorted.slice(0,2);
+  const strong = sorted.slice(-2).reverse();
+  document.getElementById('zonesGrid').innerHTML = `
+    <div class="zone-card">
+      <div class="zt w">⚠️ Слабые зоны</div>
+      ${weak.map(s=>`<div class="zi"><span>${s.emoji} ${s.name}</span><span class="zv">${s.val}</span></div>`).join('')}
+    </div>
+    <div class="zone-card">
+      <div class="zt s">💪 Сильные зоны</div>
+      ${strong.map(s=>`<div class="zi"><span>${s.emoji} ${s.name}</span><span class="zv">${s.val}</span></div>`).join('')}
+    </div>`;
+
+  renderWeekHistory();
+  renderMonthSummary();
+}
+
+// ── NAV ──
+function go(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const idx=['today','results'].indexOf(name);
+  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  if(name==='results') renderResults();
+}
+
+function showExit(){document.getElementById('exitScreen').classList.add('show')}
+function hideExit(){document.getElementById('exitScreen').classList.remove('show')}
+function doExit(){
+  save();
+  document.getElementById('exitScreen').classList.remove('show');
+  document.body.innerHTML=`
+    <div style="background:#0d0d0d;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:'Montserrat',sans-serif">
+      <div style="font-size:52px">⚡</div>
+      <div style="font-size:18px;font-weight:800;color:#f0f0f0">До встречи, Азамат</div>
+      <div style="font-size:12px;color:#555;margin-bottom:16px">Данные сохранены</div>
+      <button onclick="location.reload()" style="background:#FFD166;border:none;border-radius:14px;padding:14px 32px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;color:#000">↩ Вернуться</button>
+      <div style="font-size:11px;color:#444;margin-top:4px">или смахни вверх чтобы свернуть</div>
+    </div>`;
+}
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(window._t);window._t=setTimeout(()=>el.classList.remove('show'),1800);
+}
+
+// ── INIT ──
+updHist();
+renderToday();
+</script>
+</body>
+</html>
